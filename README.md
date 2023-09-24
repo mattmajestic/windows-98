@@ -14,3 +14,11 @@ bash ./run-docker.sh
 # or
 docker-compose up
 ```
+
+## Run from Dockerhub
+```
+docker pull mattmajestic/windows98
+docker run -d -p 80:80 mattmajestic/windows98:latest
+```
+
+[![Docker Pulls](https://img.shields.io/docker/pulls/mattmajestic/windows98.svg)](https://hub.docker.com/r/mattmajestic/windows98)
