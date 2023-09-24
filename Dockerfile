@@ -1,11 +1,14 @@
-# Use an official nginx runtime as a parent image
-FROM nginx:latest
+# Use an official Python runtime as a parent image
+FROM python:3.9
 
-# Copy everything from the current directory to the nginx web root directory
-COPY . /usr/share/nginx/html/
+# Set the working directory
+WORKDIR /app
+
+# Copy everything from the current directory to the container
+COPY . /app
 
 # Expose port 80 to allow incoming traffic
 EXPOSE 80
 
-# Start nginx server when the container is run
-CMD ["nginx", "-g", "daemon off;"]
+# Start a simple HTTP server to serve HTML files
+CMD ["python", "-m", "http.server", "80"]
