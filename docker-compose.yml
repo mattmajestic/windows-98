@@ -1,6 +1,7 @@
 version: '3.9'
 services:
   windows98:
+    image: windows98
     build:
       context: .
       dockerfile: Dockerfile
