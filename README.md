@@ -1,6 +1,7 @@
 # Majestic Windows 98 Portfolio
 
 ## Deployments
+- Azure Web App: https://windows-98.azurewebsites.net
 - Github Pages: https://mattmajestic.github.io/windows-98/
 - Netlify: https://majestic-windows-98.netlify.app/
 - Vercel: https://majestic-windows-98.vercel.app/
