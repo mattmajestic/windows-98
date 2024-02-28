@@ -1,0 +1,53 @@
+name: Build and Deploy GH Runner on ACI
+
+on:
+  push:
+    branches: [main]
+    paths: 
+      - Dockerfile.aci
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: runner
+  IMAGE_TAG: ${{ github.run_number }}
+  RUNNER_REPOSITORY_URL: https://github.com/mattmajestic/windows-98
+  RESOURCE_GROUP: azure-vm
+  LOCATION: eastus
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # Build and Push image to Azure Container Registry
+      - name: Build and Push to ACR
+        run: |
+          docker build . -t ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG
+          docker login ${{ secrets.ACR_SERVER }} -u ${{ secrets.ACR_USER }} -p ${{ secrets.ACR_PASSWORD }}
+          docker push ${{ secrets.ACR_SERVER }}/$IMAGE_NAME:$IMAGE_TAG
+
+      # Login to Azure using Service Principal
+      - name: Azure Login
+        uses: Azure/login@v1
+        with:
+          client-id: ${{ secrets.AZURE_ACI_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_ACI_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-secret: ${{ secrets.AZURE_ACI_CLIENT_SECRET }}
+
+      # Deploy an Azure Container Instance
+      - name: Deploy to Azure Container Instances
+        uses: Azure/aci-deploy@v1
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          location: ${{ env.LOCATION }}
+          cpu: 2
+          dns-name-label: mattmajestic${{ github.run_number }}
+          environment-variables: RUNNER_REPOSITORY_URL=${{ env.RUNNER_REPOSITORY_URL }}
+          image: ${{ secrets.ACR_SERVER }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          name: actions-runner
+          registry-login-server: ${{ secrets.ACR_SERVER }}
+          registry-username: ${{ secrets.ACR_USER }}
+          registry-password: ${{ secrets.ACR_PASSWORD }}
+          secure-environment-variables: GITHUB_TOKEN=${{ secrets.GIT_PAT }}
